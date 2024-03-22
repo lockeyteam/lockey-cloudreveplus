@@ -1,17 +1,16 @@
-FROM alpine:latest
+FROM debian:latest
 
-WORKDIR /cloudreve
-COPY cloudreve ./cloudreve
+RUN apt update
+RUN DEBIAN_FRONTEND=noninteractive apt install wget unzip curl -y
 
-RUN apk update \
-    && apk add --no-cache tzdata \
-    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone \
-    && chmod +x ./cloudreve \
-    && mkdir -p /data/aria2 \
-    && chmod -R 766 /data/aria2
+RUN echo "* soft nproc 11000" >> /etc/security/limits.conf && \
+    echo "* hard nproc 11000" >> /etc/security/limits.conf && \
+    echo "* soft nofile 655350" >> /etc/security/limits.conf && \
+    echo "* hard nofile 655350" >> /etc/security/limits.conf && \
+    echo -e "系统优化成功！"
 
-EXPOSE 5212
-VOLUME ["/cloudreve/uploads", "/cloudreve/avatar", "/data"]
+COPY entrypoint.sh /home/entrypoint.sh
+RUN chmod +x /home/entrypoint.sh
+EXPOSE 80
+CMD /home/entrypoint.sh
 
-ENTRYPOINT ["./cloudreve"]
